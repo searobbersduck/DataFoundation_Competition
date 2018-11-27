@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+.idea
+sentiment_analyse_mobile/data
+
 # Distribution / packaging
 .Python
 build/
