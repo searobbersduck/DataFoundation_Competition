@@ -8,6 +8,8 @@ __pycache__/
 
 .idea
 sentiment_analyse_mobile/data
+*log.txt
+
 
 # Distribution / packaging
 .Python
