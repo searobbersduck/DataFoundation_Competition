@@ -11,7 +11,7 @@ python3
 2. 生成训练数据：***```python ./baseline/data.py gen_sentiment_files```***
 3. 训练模型：***```python sentiment_cls.py --task_name=sent --do_train=true --do_eval=true --data_dir=./data/ --vocab_file=/Users/higgs/beast/code/demo/bert/test/chinese_L-12_H-768_A-12/vocab.txt --bert_config_file=/Users/higgs/beast/code/demo/bert/test/chinese_L-12_H-768_A-12/bert_config.json --init_checkpoint=/Users/higgs/beast/code/demo/bert/test/chinese_L-12_H-768_A-12/bert_model.ckpt --max_seq_length=64 --train_batch_size=32 --learning_rate=2e-5 --num_train_epochs=3.0 --output_dir=./tmp/sent_output/```***
 
-[train](./img/train.png)
+![train](./img/train.png)
 
 ## 预测结果
 1. 下载测试数据，并copy到data目录下
