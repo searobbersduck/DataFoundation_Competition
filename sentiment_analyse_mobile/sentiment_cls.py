@@ -1,5 +1,8 @@
 # !/usr/bin/env python3
 
+import sys
+sys.path.append('./bert/')
+
 import os
 import collections
 import csv
@@ -7,6 +10,7 @@ import modeling
 import optimization
 import tokenization
 import tensorflow as tf
+import pandas as pd
 
 flags = tf.flags
 
@@ -136,8 +140,8 @@ class DataProcessor(object):
 class SentimentAnalysisProcessor(DataProcessor):
     def get_train_examples(self, data_dir):
         return self._create_examples(
-            os.path.join(data_dir, 'sents_val.txt'),
-            os.path.join(data_dir, 'labels_val.txt'),
+            os.path.join(data_dir, 'sents_train.txt'),
+            os.path.join(data_dir, 'labels_train.txt'),
             'train'
         )
     def get_dev_examples(self, data_dir):
@@ -147,11 +151,12 @@ class SentimentAnalysisProcessor(DataProcessor):
             'dev'
         )
     def get_test_examples(self, data_dir):
-        return self._create_examples(
-            os.path.join(data_dir, 'sents_test.txt'),
-            os.path.join(data_dir, 'labels_test.txt'),
-            'test'
-        )
+        # return self._create_examples(
+        #     os.path.join(data_dir, 'sents_test.txt'),
+        #     os.path.join(data_dir, 'labels_test.txt'),
+        #     'test'
+        # )
+        return self._create_examples_test(os.path.join(data_dir, 'test_public.csv'))
     def get_labels(self):
         return ['0', '1', '2', '3']
     def _create_examples(self, txt_file, label_file, set_type):
@@ -178,7 +183,7 @@ class SentimentAnalysisProcessor(DataProcessor):
             text_a = tokenization.convert_to_unicode(sent)
             text_b = None
             if set_type == "test":
-                label = "0"
+                label = ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0']
             else:
                 labels = []
                 for ii in range(len(labels_list[i])):
@@ -190,6 +195,19 @@ class SentimentAnalysisProcessor(DataProcessor):
             )
         return examples
 
+    def _create_examples_test(self, csv_file):
+        df = pd.read_csv(csv_file)
+        examples = []
+        for index, row in df.iterrows():
+            guid = '{}-{}'.format('test', index)
+            sent = ' '.join(list(row['content']))
+            text_a = tokenization.convert_to_unicode(sent)
+            text_b = None
+            label = ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0']
+            examples.append(
+                InputExample(guid=guid, text_a=text_a,
+                             text_b=text_b, label=label))
+        return examples
 
 def _truncate_seq_pair(tokens_a, tokens_b, max_length):
   """Truncates a sequence pair in place to the maximum length."""
@@ -499,8 +517,12 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
           eval_metrics=eval_metrics,
           scaffold_fn=scaffold_fn)
     else:
+      predictions = tf.argmax(tf.transpose(tf.convert_to_tensor(logits), (1, 0, 2)), axis=-1,
+                  output_type=tf.int32)
+      # output_spec = tf.contrib.tpu.TPUEstimatorSpec(
+      #     mode=mode, predictions=tf.transpose(tf.convert_to_tensor(probabilities), [1,0,2]), scaffold_fn=scaffold_fn)
       output_spec = tf.contrib.tpu.TPUEstimatorSpec(
-          mode=mode, predictions=probabilities, scaffold_fn=scaffold_fn)
+          mode=mode, predictions=predictions, scaffold_fn=scaffold_fn)
     return output_spec
 
   return model_fn

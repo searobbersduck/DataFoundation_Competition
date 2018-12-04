@@ -2,12 +2,15 @@
 
 import os
 import pandas as pd
+import fire
 
 subjects_list = ['动力','价格','内饰','配置','安全性','外观','操控','油耗','空间','舒适性']
 subjects_dict = {}
+subjects_dict_id2label = {}
 cnt = 0
 for subject in subjects_list:
     subjects_dict[subject] = cnt
+    subjects_dict_id2label[cnt] = subject
     cnt += 1
 
 def get_sentiment_label(infile):
@@ -49,7 +52,46 @@ def gen_sentiment_files():
     with open(os.path.join(outdir, 'labels_test.txt'), 'w', encoding='utf8') as f:
         f.write('\n'.join(labels_list[val_num:]))
 
+def merge_test_result(in_csv_file, in_result_file, out_csv_file):
+    df_in = pd.read_csv(in_csv_file)
+    # df_out = pd.DataFrame(columns=['content_id', 'content', 'subject', 'sentiment_value', 'sentiment_word'])
+    df_out = pd.DataFrame(columns=['content_id', 'subject', 'sentiment_value', 'sentiment_word'])
+    res_list = []
+    with open(in_result_file, 'r', encoding='utf8') as f:
+        for line in f.readlines():
+            line = line.strip()
+            if line is None or line == '':
+                continue
+            res_list.append(line)
+    jj = 0
+    for index, row in df_in.iterrows():
+        res = res_list[index]
+        ss = res.split('\t')
+        cnt_jj = 0
+        for i in range(len(ss)):
+            if int(ss[i]) > 0:
+                # df_out.loc[jj] = [row['content_id'], row['content'], subjects_dict_id2label[i], int(ss[i])-2, '']
+                df_out.loc[jj] = [row['content_id'], subjects_dict_id2label[i], int(ss[i]) - 2, '']
+                jj += 1
+                cnt_jj += 1
+        if cnt_jj == 0:
+            df_out.loc[jj] = [row['content_id'], '', 0, '']
+            jj += 1
+
+    # df_out.reset_index()
+    df_out.to_csv(out_csv_file, index=False, encoding='utf-8-sig')
+    print('hello world!')
+
+def test_merge_test_result():
+    in_csv_file = '../data/test_public.csv'
+    in_res_file = '../bert/tmp/sent_output/test_results.tsv'
+    out_csv_file = './test_public.csv'
+    merge_test_result(in_csv_file, in_res_file, out_csv_file)
+
+
+
 if __name__ == '__main__':
     # get_sentiment_label('../data/train.csv', '内饰')
-    gen_sentiment_files()
-
+    # gen_sentiment_files()
+    # test_merge_test_result()
+    fire.Fire()

@@ -9,6 +9,8 @@ __pycache__/
 .idea
 sentiment_analyse_mobile/data
 *log.txt
+.DS_Store
+*.csv
 
 
 # Distribution / packaging
