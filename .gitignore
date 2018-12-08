@@ -13,6 +13,9 @@ sentiment_analyse_mobile/data
 *.csv
 
 
+# project:population_dynamic_survey
+
+
 # Distribution / packaging
 .Python
 build/
